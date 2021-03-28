@@ -1,8 +1,8 @@
-##MQTT subscriber and publisher examples in C/C++ with libmosquitto
+## MQTT subscriber and publisher examples in C/C++ with libmosquitto
 
 This project demonstrates the use of [MQTT](http://mqtt.org) protocol for collecting environment data (pressure, temperature and humidity) with MQTT clients distributed on multiple locations, running on Raspberry Pi with Pi Sense HAT attached. [libmosquitto](https://mosquitto.org/) is selected for impleneting MQTT subsriber and publisher code in C/C++, while  [Mosquitto](https://mosquitto.org/) is MQTT broker of choise for testing the implementation.
 
-###Project components
+### Project components
 
 Three MQTT clients are included in the project:
  
@@ -10,7 +10,7 @@ Three MQTT clients are included in the project:
 - **mqtt\_pub**: a publisher of dummy/test ambient data (used for testing the MQTT setup);
 - **mqtt\_pub\_sense\_hat**: same as mqtt_pub, but it uses the sensors on **Raspberry Pi Sense HAT** for providing actual ambient data. 
 
-###How it works
+### How it works
 
 - Client **mqtt\_sub**. It subscribes to every topic on the broker that starts with *home* and ends with *ambient\_data* (*"home/+/ambient_data"*). The loop for recieving MQTT messages runns in a separate thread. The received payload will end up in a FIFO queue. Additional worker thread will process every payload entry from the queue by calling the process_message() function. In this example, the function only prints the payload on a standard console. 
 
@@ -31,19 +31,19 @@ The MQTT message carries control and payload data. The payload consist of: locat
 All MQTT messages are send with *QoS (quality of service) flag* set to 0, and *retain* field set to *false*.
 The clients neither support MQTT authentication nor they can establish a sequire connection with the broker over SSL channel.
 
-###Software Requirements  and Tools
+### Software Requirements  and Tools
 
  - Libmosquitto library;
  - [Libsetila](https://github.com/positronic57/libsetila) for Pi Sense HAT envirement sensors support;
  - CMake for building the project from source;
  - Mosquitto broker for testing the clients functionallity.
  
-###Supported Hardware Platforms
+### Supported Hardware Platforms
 
 The code should work on all platforms capable of running Linux with multithreading, and are supported by libmosquitto. 
 Only the mqtt\_pub\_sense\_hat is written for Raspberry Pi with Pi Sense Hat, althoug if will work on other embedded systems with LPS25H and HTS221 sensors attached.
 
-##Installation
+## Installation
 
 Before building the source code on Ubuntu or Raspbian, make sure that libmosquitto-dev package is already installed. The package is available in the official Ubuntu and Raspbian repositories. 
 
@@ -77,7 +77,7 @@ The last two commands will generate rules for building mqtt\_sub and mqtt\_pub b
     #make install
 
 
-###Deployment and testing
+### Deployment and testing
 
 There are different depolyment scenarios depending where the MQTT broker and client will be hosted/running. 
 One of the posible implementations is presented on the diagram below.
@@ -88,7 +88,7 @@ One of the posible implementations is presented on the diagram below.
 
 In this example, *the broker* and *mqtt_sub *run on a same *Ubuntu 18.04 host* or the collector node, while *mqtt\_pub\_sense\_hat clients* will be started on two *Raspberry Pi* with *Pi Sense HAT* running Raspbian. Those are the publishing nodes.
 
-####Prepearing the collector node
+#### Prepearing the collector node
 
 Bild the project on the collector node to get mqtt\_sub client binary. Next step is Mosquitto broker installation.
 
@@ -117,12 +117,12 @@ Optional, configure Mosquitto to start at boot automatically:
     #sudo systemctrl enable mosquitto.service
 
 
-####Publishers
+#### Publishers
 
 Install the prerequisits required for building mqtt\_pub\_sense\_hat on Raspberry Pi with Sense HAT. Build the binary from source.
 
 
-####Test
+#### Test
 
 MQTT broker should be already running on the system, waiting to manage MQTT messages. Start the subscriber client on the collector node.  To do so, in the command line, navigate to the bin folder under the project folder and start the binary:
 
