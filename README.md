@@ -29,7 +29,7 @@ The client will use the default values for the missing arguments.
 The MQTT message carries control and payload data. The payload consist of: location name, temperature, pressure and humidity. 
 
 All MQTT messages are send with *QoS (quality of service) flag* set to 0, and *retain* field set to *false*.
-The clients neither support MQTT authentication nor they can establish a sequire connection with the broker over SSL channel.
+The clients neither support MQTT authentication nor they can establish a secure connection with the broker over SSL channel.
 
 ### Software Requirements  and Tools
 
@@ -60,7 +60,7 @@ Execute the following command in order to create a building instructions for the
 
 or
 
-    #cmake -DCMAKE_BUILD_TYPE=Release
+    #cmake -DCMAKE_BUILD_TYPE=Debug
 
 for debug version.
 
