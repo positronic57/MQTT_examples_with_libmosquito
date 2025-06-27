@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.7 FATAL_ERROR)
 
 # Define the project name
 project(mqtt_pub_sense_hat)
@@ -12,12 +12,9 @@ set(CMAKE_CXX_FLAGS_RELEASE "-std=c++11 -O0 -Wall -fmessage-length=0")
 # Set the C++ compiler flags. Enable C++11 standard.
 set(CMAKE_CXX_FLAGS_DEBUG "-std=c++11 -O0 -g3 -Wall -fmessage-length=0")
 
-# Define the location/search path for the libraries
-set(MQTT_LIBS_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../lib)
-
 # Define the include directory
 include_directories(
-	${CMAKE_CURRENT_SOURCE_DIR}/../mqtt_includes
+${CMAKE_CURRENT_SOURCE_DIR}/../mqtt_includes
 )
 
 # Define the list of source files
@@ -26,8 +23,18 @@ mqtt_pub_sense_hat.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/../common/common.c
 )
 
-# The libraries are located here
-link_directories(${MQTT_LIBS_PATH})
+find_library(LIBSETILA
+  NAMES libsetila setila
+  PATH /usr/local/lib
+)
+ 
+# Look for libsetila library 
+if (LIBSETILA STREQUAL LIBSETILA-NOTFOUND)
+    message(FATAL_ERROR "Library libsetila not found. \
+    It is required for WITH_PI_SENSE_HAT option. \
+    Available on Github: https://github.com/positronic57/libsetila. \
+    Please install it before proceed with the build.")
+endif()
 
 # Create mqtt_pub_sense_hat binary using the files from the SOURCE_LIST 
 add_executable(mqtt_pub_sense_hat ${SOURCE_LIST})

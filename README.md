@@ -1,18 +1,19 @@
-## MQTT subscriber and publisher examples in C/C++ with libmosquitto
+## Libmosquitto examples with Raspberry Pi
 
-This project demonstrates the use of [MQTT](http://mqtt.org) protocol for collecting environment data (pressure, temperature and humidity) with MQTT clients distributed on multiple locations, running on Raspberry Pi with Pi Sense HAT attached. [libmosquitto](https://mosquitto.org/) is selected for impleneting MQTT subsriber and publisher code in C/C++, while  [Mosquitto](https://mosquitto.org/) is MQTT broker of choise for testing the implementation.
+This project demonstrates the use of [MQTT](http://mqtt.org) protocol for collecting environment data (pressure, temperature and humidity) with MQTT clients distributed on multiple locations, running on Raspberry Pi with Pi Sense HAT attached. [libmosquitto](https://mosquitto.org/)  is selected for implementing the MQTT publishers and subscribers in C/C++, while  [Eclipse Mosquitto](https://mosquitto.org/) is MQTT broker of choice for testing the code. In one of the examples, Home Assistant is the MQTT subscriber on a topic published by MQTT client written with libmosquitto.
 
 ### Project components
 
-Three MQTT clients are included in the project:
+Four MQTT clients are included in the project:
  
-- **mqtt\_sub**: a suibscriber to ambient data topic;
+- **mqtt\_sub**: a subscriber to ambient data topic;
 - **mqtt\_pub**: a publisher of dummy/test ambient data (used for testing the MQTT setup);
-- **mqtt\_pub\_sense\_hat**: same as mqtt_pub, but it uses the sensors on **Raspberry Pi Sense HAT** for providing actual ambient data. 
+- **mqtt\_pub\_sense\_hat**: same as mqtt_pub, but it uses the sensors on **Raspberry Pi Sense HAT** for providing actual ambient data;
+- **mqtt_pub_ha_sub**: the readings from Raspberry Pi Sense HAT are published in JSON format via Eclipse Mosquitto Broker. Home Assistant plays the role of the subscriber. A detailed description of this use case is presented [here](doc/README_HA.md).
 
 ### How it works
 
-- Client **mqtt\_sub**. It subscribes to every topic on the broker that starts with *home* and ends with *ambient\_data* (*"home/+/ambient_data"*). The loop for recieving MQTT messages runns in a separate thread. The received payload will end up in a FIFO queue. Additional worker thread will process every payload entry from the queue by calling the process_message() function. In this example, the function only prints the payload on a standard console. 
+- Client **mqtt\_sub**. It subscribes to every topic on the broker that starts with *home* and ends with *ambient\_data* (*"home/+/ambient_data"*). The loop for receiving MQTT messages runs in a separate thread. The received payload will end up in a FIFO queue. Additional worker thread will process every payload entry from the queue by calling the process_message() function. In this example, the function only prints the payload on a standard console. 
 
 - The publisher **mqtt\_pub** writes on the topic either dummy or real environment data it collects for its location. The client publishes the MQTT message in a loop.
 
@@ -50,25 +51,27 @@ Before building the source code on Ubuntu or Raspbian, make sure that libmosquit
 For Pi Sense HAT support, first install *[libsetila](https://github.com/positronic57/libsetila)* library. Check libsetilla installation manual for the instructions.
 
 CMake tool is selected for building the clients from the source. It is an out-of-source build which requires a 
-separate foder for the compiling process. Navigate to the project folder, create a new subfolder and jump inside:
+separate folder for the compiling process. Navigate to the project folder, create a new subfolder and jump inside:
 
     #mkdir build && cd build
 
 Execute the following command in order to create a building instructions for the release version of the binaries:
 
-    #cmake -DCMAKE_BUILD_TYPE=Release
+    #cmake -DCMAKE_BUILD_TYPE=Release ..
 
 or
 
-    #cmake -DCMAKE_BUILD_TYPE=Debug
+    #cmake -DCMAKE_BUILD_TYPE=Release ..
 
 for debug version.
 
 The last two commands will generate rules for building mqtt\_sub and mqtt\_pub binaries only. For getting mqtt_pub_sense_hat build, use additional argument -DWITH_PI_SENSE_HAT=ON:
 
     #cmake -DCMAKE_BUILD_TYPE=Release -DWITH_PI_SENSE_HAT=ON ..
-    
- After Cmake will generate the build scritps, compile the clients with:
+
+To include the Home Assistant example in the build, add `-DWITH_HA_EXAMPLE` as an argument of the `cmake` command.
+
+ After Cmake generated the build scripts, compile the clients with:
  
      #make
  
@@ -79,14 +82,14 @@ The last two commands will generate rules for building mqtt\_sub and mqtt\_pub b
 
 ### Deployment and testing
 
-There are different depolyment scenarios depending where the MQTT broker and client will be hosted/running. 
-One of the posible implementations is presented on the diagram below.
+There are different deployment scenarios depending where the MQTT broker and client will be hosted/running. 
+One of the possible implementations is presented on the diagram below.
 
 ![Test](doc/mqtt.png  "Test")
 
 [![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
-In this example, *the broker* and *mqtt_sub *run on a same *Ubuntu 18.04 host* or the collector node, while *mqtt\_pub\_sense\_hat clients* will be started on two *Raspberry Pi* with *Pi Sense HAT* running Raspbian. Those are the publishing nodes.
+In this example, *the broker* and *mqtt_sub *run on a same *Ubuntu 18.04 host* or the collector node, while *mqtt\_pub\_sense\_hat clients* will be started on two *Raspberry Pi* with *Pi Sense HAT* running Raspbian OS. Those are the publishing nodes.
 
 #### Prepearing the collector node
 
@@ -119,7 +122,7 @@ Optional, configure Mosquitto to start at boot automatically:
 
 #### Publishers
 
-Install the prerequisits required for building mqtt\_pub\_sense\_hat on Raspberry Pi with Sense HAT. Build the binary from source.
+Install the prerequisites required for building mqtt\_pub\_sense\_hat on Raspberry Pi with Sense HAT. Build the binary from source.
 
 
 #### Test
@@ -129,7 +132,7 @@ MQTT broker should be already running on the system, waiting to manage MQTT mess
     #cd <project_folder>/bin
     #./mqtt_sub
 
-Because it runns on the same host as the broker, no arguments for broker hostname and port are required. 
+Because it runs on the same host as the broker, no arguments for broker hostname and port are required. 
 
 After the subscriber is running, start the mqtt\_pub or mqrr\_pub\_sense\_hat processes on the Pi client(s):
 
@@ -137,7 +140,7 @@ After the subscriber is running, start the mqtt\_pub or mqrr\_pub\_sense\_hat pr
     
     #./mqtt_pub_sense_hat -b mqtt-broker -l kitchen
 
-Or with IP addess of the broker machine (10.10.10.2 on the deployment diagram) as a velue for the -b argument:
+Or with IP address of the broker machine (10.10.10.2 on the deployment diagram) as a value for the -b argument:
 
     #./mqtt_pub_sense_hat -b 10.10.10.2 -l kitchen
 
@@ -165,3 +168,5 @@ Mqtt\_sub will print the received ambient data in the console where is was start
 The source is provided as it is without any warranty. Use it on your own risk!
 The author does not take any responsibility for the damage caused while using this software.
 
+**DISCLAIMER:**
+The code is a result of a hobby work and the author is not affiliated with any of the hardware/components/boards manufacturers mentioned in the code, documentation or the description of this project. All trademarks are the property of the respective owners.
