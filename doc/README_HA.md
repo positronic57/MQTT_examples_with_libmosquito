@@ -89,7 +89,7 @@ The MQTT messages is send with *QoS (quality of service) flag* set to 0, and *re
 This file is loaded in the main configuration file of Home Assistant `configuration.yaml` under `mqtt` configuration section:
 ```
 mqtt:
-  sensor: !include sensori.yaml
+  sensor: !include mqtt_sensors.yaml
 ```
 
  
